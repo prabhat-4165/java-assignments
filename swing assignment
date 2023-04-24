@@ -1,0 +1,419 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+public class FacePanel extends JPanel {
+
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        // Draw Smiling Face
+        g.setColor(Color.YELLOW);
+        g.fillOval(50, 50, 100, 100);
+        g.setColor(Color.BLACK);
+        g.drawOval(50, 50, 100, 100);
+        g.fillOval(75, 75, 10, 10);
+        g.fillOval(115, 75, 10, 10);
+        g.drawArc(75, 90, 50, 20, 180, 180);
+        g.drawString("Smiling", 85, 25);
+        
+        // Draw Angry Face
+        g.setColor(Color.RED);
+        g.fillOval(200, 50, 100, 100);
+        g.setColor(Color.BLACK);
+        g.drawOval(200, 50, 100, 100);
+        g.fillOval(225, 75, 10, 10);
+        g.fillOval(265, 75, 10, 10);
+        g.drawLine(235, 105, 265, 105);
+        g.drawString("Angry", 235, 25);
+        
+        // Draw Happy Face
+        g.setColor(Color.GREEN);
+        g.fillOval(350, 50, 100, 100);
+        g.setColor(Color.BLACK);
+        g.drawOval(350, 50, 100, 100);
+        g.fillOval(375, 75, 10, 10);
+        g.fillOval(415, 75, 10, 10);
+        g.drawArc(375, 90, 50, 40, 180, 180);
+        g.drawString("Happy", 385, 25);
+        
+        // Draw Crying Face
+        g.setColor(Color.BLUE);
+        g.fillOval(500, 50, 100, 100);
+        g.setColor(Color.BLACK);
+        g.drawOval(500, 50, 100, 100);
+        g.drawLine(535, 115, 545, 95);
+        g.drawLine(545, 95, 565, 95);
+        g.drawLine(565, 95, 575, 115);
+        g.drawLine(575, 115, 535, 115);
+        g.fillOval(530, 75, 10, 10);
+        g.fillOval(560, 75, 10, 10);
+        g.drawString("Crying", 515, 25);
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Face Panel");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(700, 200);
+        frame.add(new FacePanel());
+        frame.setVisible(true);
+    }
+}
+
+
+
+2
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class BouncingBall extends JPanel{
+
+    private int x = 0;
+    private int y = 0;
+    private int xVelocity = 1;
+    private int yVelocity = 1;
+    private int ballSize = 30;
+    private Color ballColor = Color.BLUE;
+
+    public BouncingBall() {
+        Timer t = new Timer(10 , new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                x += xVelocity;
+                y += yVelocity;
+                if (x < 0 || x > getWidth() - ballSize) {
+                    xVelocity = -xVelocity;
+                }
+                if (y < 0 || y > getHeight() - ballSize) {
+                    yVelocity = -yVelocity;
+                }
+                repaint();
+            }
+            
+        });
+        t.start();
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        g.setColor(ballColor);
+        g.fillOval(x, y, ballSize, ballSize);
+        repaint();
+    }
+
+    // public void run() {
+    // while (true) {
+    // try {
+    // Thread.sleep(5);
+    // } catch (InterruptedException e) {
+    // e.printStackTrace();
+    // }
+    // x += xVelocity;
+    // y += yVelocity;
+    // if (x < 0 || x > getWidth() - ballSize) {
+    // xVelocity = -xVelocity;
+    // }
+    // if (y < 0 || y > getHeight() - ballSize) {
+    // yVelocity = -yVelocity;
+    // }
+    // repaint();
+    // }
+    // }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Bouncing Ball");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 400);
+        BouncingBall ball = new BouncingBall();
+        frame.add(ball);
+        frame.setVisible(true);
+    }
+}
+
+
+3
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+public class ImageViewer extends JFrame implements ActionListener {
+
+    private JLabel imageLabel;
+    private JButton openButton;
+    private JButton saveButton;
+    private JButton cropButton;
+    private JButton resizeButton;
+    private JButton rotateButton;
+    private JButton grayscaleButton;
+    private BufferedImage originalImage;
+    private BufferedImage displayedImage;
+
+    public ImageViewer() {
+        super("Image Viewer");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
+
+        imageLabel = new JLabel();
+        add(imageLabel, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel();
+        openButton = new JButton("Open");
+        openButton.addActionListener(this);
+        buttonPanel.add(openButton);
+
+        saveButton = new JButton("Save");
+        saveButton.addActionListener(this);
+        saveButton.setEnabled(false);
+        buttonPanel.add(saveButton);
+
+        cropButton = new JButton("Crop");
+        cropButton.addActionListener(this);
+        cropButton.setEnabled(false);
+        buttonPanel.add(cropButton);
+
+        resizeButton = new JButton("Resize");
+        resizeButton.addActionListener(this);
+        resizeButton.setEnabled(false);
+        buttonPanel.add(resizeButton);
+
+        rotateButton = new JButton("Rotate");
+        rotateButton.addActionListener(this);
+        rotateButton.setEnabled(false);
+        buttonPanel.add(rotateButton);
+
+        grayscaleButton = new JButton("Grayscale");
+        grayscaleButton.addActionListener(this);
+        grayscaleButton.setEnabled(false);
+        buttonPanel.add(grayscaleButton);
+
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == openButton) {
+            JFileChooser fileChooser = new JFileChooser();
+            int result = fileChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                try {
+                    originalImage = ImageIO.read(selectedFile);
+                    displayedImage = originalImage;
+                    imageLabel.setIcon(new ImageIcon(displayedImage));
+                    saveButton.setEnabled(true);
+                    cropButton.setEnabled(true);
+                    resizeButton.setEnabled(true);
+                    rotateButton.setEnabled(true);
+                    grayscaleButton.setEnabled(true);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } else if (e.getSource() == saveButton) {
+            JFileChooser fileChooser = new JFileChooser();
+            int result = fileChooser.showSaveDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                try {
+                    ImageIO.write(displayedImage, "png", selectedFile);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } else if (e.getSource() == cropButton) {
+            int x = JOptionPane.showOptionDialog(this, "Choose crop region", "Crop", JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.PLAIN_MESSAGE, null, new Object[] {}, null);
+            if (x == JOptionPane.CLOSED_OPTION) {
+                return;
+            }
+            Rectangle cropRect = imageLabel.getMousePosition() != null
+                    ? new Rectangle(imageLabel.getMousePosition().x, imageLabel.getMousePosition().y, 0, 0)
+                    : new Rectangle(0, 0, 0, 0);
+            BufferedImage croppedImage = originalImage.getSubimage(cropRect.x, cropRect.y, cropRect.width,
+                    cropRect.height);
+            displayedImage = croppedImage;
+            imageLabel.setIcon(new ImageIcon(displayedImage));
+            repaint();
+        } else if (e.getSource() == resizeButton) {
+            String input = JOptionPane.showInputDialog(this, "Enter new size in format WxH (e.g. 800x600)");
+            if (input == null) {
+                return;
+            }
+            String[] dimensions = input.split("x");
+            int newWidth = Integer.parseInt(dimensions[0]);
+            int newHeight = Integer.parseInt(dimensions[1]);
+            BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+            Graphics2D g2d = resizedImage.createGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+            g2d.dispose();
+            displayedImage = resizedImage;
+            imageLabel.setIcon(new ImageIcon(displayedImage));
+            repaint();
+        } else if (e.getSource() == rotateButton) {
+            String input = JOptionPane.showInputDialog(this, "Enter rotation angle in degrees (e.g. 90)");
+            if (input == null) {
+                return;
+            }
+            double angle = Double.parseDouble(input);
+            AffineTransform transform = AffineTransform.getRotateInstance(Math.toRadians(angle),
+                    originalImage.getWidth() / 2.0, originalImage.getHeight() / 2.0);
+            AffineTransformOp op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
+            BufferedImage rotatedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(),
+                    originalImage.getType());
+            op.filter(originalImage, rotatedImage);
+            displayedImage = rotatedImage;
+            imageLabel.setIcon(new ImageIcon(displayedImage));
+            repaint();
+        } else if (e.getSource() == grayscaleButton) {
+            BufferedImage grayscaleImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(),
+                    originalImage.getType());
+            Graphics2D g2d = grayscaleImage.createGraphics();
+            g2d.drawImage(originalImage, 0, 0, null);
+            g2d.dispose();
+            for (int i = 0; i < grayscaleImage.getWidth(); i++) {
+                for (int j = 0; j < grayscaleImage.getHeight(); j++) {
+                    int rgb = grayscaleImage.getRGB(i, j);
+                    int r = (rgb >> 16) & 0xFF;
+                    int g = (rgb >> 8) & 0xFF;
+                    int b = rgb & 0xFF;
+                    int gray = (r + g + b) / 3;
+                    grayscaleImage.setRGB(i, j, (gray << 16) | (gray << 8) | gray);
+                }
+            }
+            displayedImage = grayscaleImage;
+            imageLabel.setIcon(new ImageIcon(displayedImage));
+            repaint();
+        }
+    }
+
+    public static void main(String[] args) {
+        new ImageViewer();
+    }
+}
+
+
+
+4
+
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class Calculator extends JFrame implements ActionListener {
+
+    private JTextField inputField;
+    private double operand1;
+    private String operator;
+
+    public Calculator() {
+        setTitle("Calculator");
+        setSize(300, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+
+        inputField = new JTextField();
+        inputField.setPreferredSize(new Dimension(inputField.getPreferredSize().width, 80));
+        inputField.setEditable(false);
+        mainPanel.add(inputField, BorderLayout.NORTH);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(4, 4));
+
+        String[] buttonLabels = { "7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", ".", "=", "+" };
+        JButton[] buttons = new JButton[buttonLabels.length];
+        for (int i = 0; i < buttonLabels.length; i++) {
+            buttons[i] = new JButton(buttonLabels[i]);
+            buttons[i].addActionListener(this);
+            buttonPanel.add(buttons[i]);
+        }
+        JPanel cPanel = new JPanel();
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(this);
+        cPanel.add(clearButton);
+
+
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
+        mainPanel.add(cPanel , BorderLayout.SOUTH);
+
+        add(mainPanel);
+
+        setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        String buttonLabel = ((JButton) e.getSource()).getText();
+        System.out.println(buttonLabel);
+        try {
+            int digit = Integer.parseInt(buttonLabel);
+            inputField.setText(inputField.getText() + digit);
+        } catch (NumberFormatException ex) {
+            if (buttonLabel.equals(".")) {
+                inputField.setText(inputField.getText() + ".");
+            } else if (buttonLabel.equals("+")) {
+                operand1 = Double.parseDouble(inputField.getText());
+                operator = "+";
+                inputField.setText("");
+            } else if (buttonLabel.equals("-")) {
+                operand1 = Double.parseDouble(inputField.getText());
+                operator = "-";
+                inputField.setText("");
+            } else if (buttonLabel.equals("*")) {
+                operand1 = Double.parseDouble(inputField.getText());
+                operator = "*";
+                inputField.setText("");
+            } else if (buttonLabel.equals("/")) {
+                operand1 = Double.parseDouble(inputField.getText());
+                operator = "/";
+                inputField.setText("");
+            } else if (buttonLabel.equals("=")) {
+                double operand2 = Double.parseDouble(inputField.getText());
+                double result = 0;
+                if (operator.equals("+")) {
+                    result = operand1 + operand2;
+                } else if (operator.equals("-")) {
+                    result = operand1 - operand2;
+                } else if (operator.equals("*")) {
+                    result = operand1 * operand2;
+                } else if (operator.equals("/")) {
+                    result = operand1 / operand2;
+                }
+                inputField.setText(Double.toString(result));
+            }
+            else if (buttonLabel.equals("Clear")){
+                inputField.setText("");
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        new Calculator();
+    }
+
+}
