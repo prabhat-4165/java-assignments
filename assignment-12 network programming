@@ -1,0 +1,450 @@
+Write a java program for creating client and server and make them communicate with
+each other until ‘exit’ is typed using TCP.
+2. Write a java program for creating a single server and multiple clients (at least 3) and
+show the communication between them using TCP.
+3. Write a java program for creating client and server and make them communicate with
+each other until ‘exit’ is typed using UDP.
+4. Write a java program for creating a single server and multiple clients (at least 3) and
+show the communication between them using UDP.
+5. Write a java program to implement and verify the DNS spoofing attack using UDP
+packets. (DNS spoofing is a type of cyber attack in which an attacker modifies the DNS
+(Domain Name System) records to redirect users to fake websites or malicious content.
+The DNS is responsible for translating human-readable domain names into IP addresses
+that machines can understand.)
+Note: Handle the respective exceptions in each program.
+
+
+
+
+------------------------------------------program-1-----------------------------------------------
+
+Here's an example Java program that creates a client and a server using TCP/IP and makes them communicate with each other until the user types 'exit':
+
+Server.java:
+
+
+import java.io.*;
+import java.net.*;
+
+public class Server {
+    public static void main(String[] args) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(1234);
+            System.out.println("Server started. Waiting for client to connect...");
+
+            Socket socket = serverSocket.accept();
+            System.out.println("Client connected.");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                System.out.println("Received message from client: " + inputLine);
+                out.println("Echoing back: " + inputLine);
+                if (inputLine.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            in.close();
+            out.close();
+            socket.close();
+            serverSocket.close();
+        } catch (IOException e) {
+            System.out.println("Exception caught when trying to listen on port 1234 or listening for a connection");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+______________________
+Client.java:
+
+
+import java.io.*;
+import java.net.*;
+
+public class Client {
+    public static void main(String[] args) {
+        try {
+            Socket socket = new Socket("localhost", 1234);
+            System.out.println("Connected to server.");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+
+            String userInput;
+            while ((userInput = stdIn.readLine()) != null) {
+                out.println(userInput);
+                String serverResponse = in.readLine();
+                System.out.println("Server response: " + serverResponse);
+                if (userInput.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            in.close();
+            out.close();
+            socket.close();
+        } catch (IOException e) {
+            System.out.println("Exception caught when trying to connect to server or when communicating with it");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+/*
+This program creates a server socket on port 1234 and listens for a client to connect to it. Once a client connects, the server creates input and output streams to communicate with the client. The server reads messages from the client and echos them back, until the client sends the message 'exit'. When the server receives 'exit', it breaks out of the loop and closes the connection.
+
+The client program connects to the server on port 1234 and creates input and output streams to communicate with the server. The client reads messages from the user and sends them to the server. The client then waits for a response from the server and prints it to the console. The client continues to send messages to the server and receive responses, until the user types 'exit'. When the user types 'exit', the client program breaks out of the loop and closes the connection.
+
+Note that in this example, the server and client are both running on the same machine (localhost). If you want to run the server and client on different machines, you'll need to replace "localhost" with the IP address or hostname of the machine running the server. */
+
+
+
+
+-----------------------------------------------Program-2------------------------------------------
+
+
+Here's an example Java program that creates a single server and multiple clients (at least 3) and shows the communication between them using TCP in Java:
+
+Server.java:
+
+
+import java.io.*;
+import java.net.*;
+
+public class Server {
+    public static void main(String[] args) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(1234);
+            System.out.println("Server started. Waiting for clients to connect...");
+
+            int clientNumber = 0;
+            while (true) {
+                Socket socket = serverSocket.accept();
+                clientNumber++;
+                System.out.println("Client " + clientNumber + " connected.");
+
+                new ServerThread(socket, clientNumber).start();
+            }
+        } catch (IOException e) {
+            System.out.println("Exception caught when trying to listen on port 1234 or listening for a connection");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+class ServerThread extends Thread {
+    private Socket socket;
+    private int clientNumber;
+
+    public ServerThread(Socket socket, int clientNumber) {
+        this.socket = socket;
+        this.clientNumber = clientNumber;
+    }
+
+    public void run() {
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                System.out.println("Received message from client " + clientNumber + ": " + inputLine);
+                out.println("Echoing back: " + inputLine);
+                if (inputLine.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            in.close();
+            out.close();
+            socket.close();
+            System.out.println("Client " + clientNumber + " disconnected.");
+        } catch (IOException e) {
+            System.out.println("Exception caught when trying to communicate with client " + clientNumber);
+            System.out.println(e.getMessage());
+        }
+    }
+}
+____________________
+Client.java:
+
+
+import java.io.*;
+import java.net.*;
+
+public class Client {
+    public static void main(String[] args) {
+        try {
+            Socket socket = new Socket("localhost", 1234);
+            System.out.println("Connected to server.");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+
+            String userInput;
+            while ((userInput = stdIn.readLine()) != null) {
+                out.println(userInput);
+                String serverResponse = in.readLine();
+                System.out.println("Server response: " + serverResponse);
+                if (userInput.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            in.close();
+            out.close();
+            socket.close();
+        } catch (IOException e) {
+            System.out.println("Exception caught when trying to connect to server or when communicating with it");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+/*
+To run this program, start the server first and then start at least 3 instances of the client program in separate command prompt windows. Each client instance will connect to the server and allow you to send messages back and forth between the clients and the server.
+
+Note that in this example, the server listens on port 1234 and creates a new thread to handle each client connection. Each client sends messages to the server and waits for a response. The server echos back each message it receives from a client. When a client sends the message 'exit', it breaks out of the loop and closes the connection. */
+
+
+
+-----------------------------------------program-3------------------------------------------------
+
+Here's an example Java program that creates a client and server and makes them communicate with each other until 'exit' is typed using UDP in Java:
+
+Server.java:
+
+
+import java.io.*;
+import java.net.*;
+
+public class Server {
+    public static void main(String[] args) {
+        try {
+            DatagramSocket serverSocket = new DatagramSocket(9876);
+            System.out.println("Server started. Waiting for client messages...");
+
+            byte[] receiveData = new byte[1024];
+
+            while (true) {
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                serverSocket.receive(receivePacket);
+
+                String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Received message from client: " + message);
+
+                if (message.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                InetAddress clientAddress = receivePacket.getAddress();
+                int clientPort = receivePacket.getPort();
+
+                String responseMessage = "Echoing back: " + message;
+                byte[] sendData = responseMessage.getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientAddress, clientPort);
+                serverSocket.send(sendPacket);
+            }
+
+            serverSocket.close();
+            System.out.println("Server stopped.");
+        } catch (IOException e) {
+            System.out.println("Exception caught while running the server.");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+_____________________
+Client.java:
+
+
+import java.io.*;
+import java.net.*;
+
+public class Client {
+    public static void main(String[] args) {
+        try {
+            DatagramSocket clientSocket = new DatagramSocket();
+
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+
+            String userInput;
+            while ((userInput = stdIn.readLine()) != null) {
+                byte[] sendData = userInput.getBytes();
+                InetAddress serverAddress = InetAddress.getByName("localhost");
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, 9876);
+                clientSocket.send(sendPacket);
+
+                byte[] receiveData = new byte[1024];
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                clientSocket.receive(receivePacket);
+
+                String serverResponse = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Server response: " + serverResponse);
+
+                if (userInput.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            clientSocket.close();
+        } catch (IOException e) {
+            System.out.println("Exception caught while running the client.");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+/*
+To run this program, start the server first and then start the client. The client will allow you to send messages to the server and receive responses back. When you type 'exit', the program will exit.
+
+Note that in this example, the server listens on port 9876 and sends responses back to the client's IP address and port number. The client sends messages to the server and waits for a response. When the client sends the message 'exit', it breaks out of the loop and closes the connection. */
+
+
+
+---------------------------------------------program-4-----------------------------------------
+
+
+
+here is a Java program that creates a single server and multiple clients (at least 3) and shows the communication between them using UDP:
+
+Server.java:
+
+java
+
+import java.io.*;
+import java.net.*;
+
+public class Server {
+    public static void main(String[] args) {
+        try {
+            DatagramSocket serverSocket = new DatagramSocket(9876);
+            System.out.println("Server started. Waiting for client messages...");
+
+            byte[] receiveData = new byte[1024];
+
+            while (true) {
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                serverSocket.receive(receivePacket);
+
+                String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Received message from client: " + message);
+
+                if (message.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                InetAddress clientAddress = receivePacket.getAddress();
+                int clientPort = receivePacket.getPort();
+
+                String responseMessage = "Echoing back: " + message;
+                byte[] sendData = responseMessage.getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientAddress, clientPort);
+                serverSocket.send(sendPacket);
+            }
+
+            serverSocket.close();
+            System.out.println("Server stopped.");
+        } catch (IOException e) {
+            System.out.println("Exception caught while running the server.");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+Client.java:
+
+java
+
+import java.io.*;
+import java.net.*;
+
+public class Client {
+    public static void main(String[] args) {
+        try {
+            DatagramSocket clientSocket = new DatagramSocket();
+
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+
+            String userInput;
+            while ((userInput = stdIn.readLine()) != null) {
+                byte[] sendData = userInput.getBytes();
+                InetAddress serverAddress = InetAddress.getByName("localhost");
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, 9876);
+                clientSocket.send(sendPacket);
+
+                byte[] receiveData = new byte[1024];
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                clientSocket.receive(receivePacket);
+
+                String serverResponse = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Server response: " + serverResponse);
+
+                if (userInput.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            clientSocket.close();
+        } catch (IOException e) {
+            System.out.println("Exception caught while running the client.");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+______________________
+ MultiClient.java file:
+
+
+import java.io.*;
+import java.net.*;
+
+public class MultiClient {
+    public static void main(String[] args) {
+        try {
+            DatagramSocket clientSocket = new DatagramSocket();
+
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+
+            String userInput;
+            while ((userInput = stdIn.readLine()) != null) {
+                byte[] sendData = userInput.getBytes();
+                InetAddress serverAddress = InetAddress.getByName("localhost");
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, 9876);
+                clientSocket.send(sendPacket);
+
+                byte[] receiveData = new byte[1024];
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                clientSocket.receive(receivePacket);
+
+                String serverResponse = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Server response: " + serverResponse);
+
+                if (userInput.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            clientSocket.close();
+        } catch (IOException e) {
+            System.out.println("Exception caught while running the client.");
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+/*
+To run the program, compile all three files and start the server first, followed by the client(s). You can then enter messages from the clients and see the server echoing them back. */
+
+
+
+-----------------------------------------Program -5----------------------------------------------
+
+
